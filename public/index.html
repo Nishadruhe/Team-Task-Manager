@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TeamFlow - Task Manager</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Auth Page -->
+  <div id="auth-page" class="page">
+    <div class="auth-container">
+      <div class="auth-brand">
+        <div class="logo">&#9889; TeamFlow</div>
+        <p>Manage projects, assign tasks, track progress.</p>
+      </div>
+      <div class="auth-card">
+        <div class="auth-tabs">
+          <button class="auth-tab active" onclick="showAuthTab('login')">Login</button>
+          <button class="auth-tab" onclick="showAuthTab('signup')">Sign Up</button>
+        </div>
+        <form id="login-form" onsubmit="handleLogin(event)">
+          <input type="email" id="login-email" placeholder="Email" required>
+          <input type="password" id="login-password" placeholder="Password" required>
+          <button type="submit" class="btn btn-primary btn-full">Login</button>
+          <div id="login-error" class="error-msg"></div>
+        </form>
+        <form id="signup-form" style="display:none" onsubmit="handleSignup(event)">
+          <input type="text" id="signup-name" placeholder="Full Name" required>
+          <input type="email" id="signup-email" placeholder="Email" required>
+          <input type="password" id="signup-password" placeholder="Password (min 4 chars)" required minlength="4">
+          <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+          <div id="signup-error" class="error-msg"></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="app-page" class="page" style="display:none">
+    <!-- Sidebar -->
+    <nav id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-sm">&#9889; TeamFlow</div>
+      </div>
+      <ul class="nav-links">
+        <li><a href="#" class="nav-link active" onclick="showView('dashboard')">&#128202; Dashboard</a></li>
+        <li><a href="#" class="nav-link" onclick="showView('projects')">&#128193; Projects</a></li>
+      </ul>
+      <div class="sidebar-footer">
+        <div id="user-info" class="user-info"></div>
+        <button class="btn btn-sm btn-outline" onclick="logout()">Logout</button>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+      <!-- Dashboard View -->
+      <div id="dashboard-view" class="view">
+        <div class="view-header">
+          <h1>&#128075; Welcome back, <span id="user-name-display"></span></h1>
+        </div>
+        <div id="stats-grid" class="stats-grid"></div>
+        <h2 class="section-title">My Tasks</h2>
+        <div id="dashboard-tasks" class="task-list"></div>
+      </div>
+
+      <!-- Projects View -->
+      <div id="projects-view" class="view" style="display:none">
+        <div class="view-header">
+          <h1>&#128193; Projects</h1>
+          <button class="btn btn-primary" onclick="openModal('create-project-modal')">+ New Project</button>
+        </div>
+        <div id="projects-grid" class="projects-grid"></div>
+      </div>
+
+      <!-- Project Detail View -->
+      <div id="project-detail-view" class="view" style="display:none">
+        <div class="view-header">
+          <button class="btn btn-sm btn-outline" onclick="showView('projects')">&larr; Back</button>
+          <h1 id="project-title"></h1>
+          <div id="project-actions"></div>
+        </div>
+        <div class="project-tabs">
+          <button class="proj-tab active" onclick="showProjectTab('tasks')">Tasks</button>
+          <button class="proj-tab" onclick="showProjectTab('members')">Members</button>
+        </div>
+        <!-- Tasks Tab -->
+        <div id="tasks-tab" class="proj-tab-content">
+          <div class="task-controls">
+            <div class="filter-group">
+              <select id="filter-status" onchange="filterTasks()">
+                <option value="">All Status</option>
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="done">Done</option>
+              </select>
+              <select id="filter-priority" onchange="filterTasks()">
+                <option value="">All Priority</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" onclick="openCreateTaskModal()">+ Add Task</button>
+          </div>
+          <div class="kanban-board">
+            <div class="kanban-col">
+              <div class="kanban-header todo-header">&#128203; To Do <span id="todo-count" class="count-badge">0</span></div>
+              <div id="todo-tasks" class="kanban-tasks"></div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-header progress-header">&#9881;&#65039; In Progress <span id="progress-count" class="count-badge">0</span></div>
+              <div id="progress-tasks" class="kanban-tasks"></div>
+            </div>
+            <div class="kanban-col">
+              <div class="kanban-header done-header">&#9989; Done <span id="done-count" class="count-badge">0</span></div>
+              <div id="done-tasks" class="kanban-tasks"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Members Tab -->
+        <div id="members-tab" class="proj-tab-content" style="display:none">
+          <div id="add-member-section" style="display:none">
+            <div class="add-member-form">
+              <input type="email" id="member-email" placeholder="Enter user email">
+              <select id="member-role"><option value="member">Member</option><option value="admin">Admin</option></select>
+              <button class="btn btn-primary" onclick="addMember()">Add</button>
+            </div>
+          </div>
+          <div id="members-list" class="members-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Create Project Modal -->
+  <div id="create-project-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>New Project</h2><button class="close-btn" onclick="closeModal('create-project-modal')">&times;</button></div>
+      <form onsubmit="createProject(event)">
+        <input type="text" id="project-name" placeholder="Project Name" required>
+        <textarea id="project-desc" placeholder="Description (optional)" rows="3"></textarea>
+        <button type="submit" class="btn btn-primary btn-full">Create Project</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Project Modal -->
+  <div id="edit-project-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>Edit Project</h2><button class="close-btn" onclick="closeModal('edit-project-modal')">&times;</button></div>
+      <form onsubmit="updateProject(event)">
+        <input type="text" id="edit-project-name" placeholder="Project Name" required>
+        <textarea id="edit-project-desc" placeholder="Description" rows="3"></textarea>
+        <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Create Task Modal -->
+  <div id="create-task-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>New Task</h2><button class="close-btn" onclick="closeModal('create-task-modal')">&times;</button></div>
+      <form onsubmit="createTask(event)">
+        <input type="text" id="task-title" placeholder="Task Title" required>
+        <textarea id="task-desc" placeholder="Description (optional)" rows="2"></textarea>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="task-priority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select>
+          </div>
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="task-due">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Assign To</label>
+          <select id="task-assign"><option value="">Unassigned</option></select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Create Task</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Task Modal -->
+  <div id="edit-task-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>Edit Task</h2><button class="close-btn" onclick="closeModal('edit-task-modal')">&times;</button></div>
+      <form onsubmit="updateTask(event)">
+        <input type="hidden" id="edit-task-id">
+        <input type="text" id="edit-task-title" placeholder="Task Title" required>
+        <textarea id="edit-task-desc" placeholder="Description" rows="2"></textarea>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Status</label>
+            <select id="edit-task-status"><option value="todo">To Do</option><option value="in_progress">In Progress</option><option value="done">Done</option></select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="edit-task-priority"><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="edit-task-due">
+          </div>
+          <div class="form-group">
+            <label>Assign To</label>
+            <select id="edit-task-assign"><option value="">Unassigned</option></select>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
