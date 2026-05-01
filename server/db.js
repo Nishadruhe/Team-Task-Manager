@@ -11,9 +11,12 @@ async function initDB() {
     name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
     password TEXT NOT NULL,
+    role TEXT CHECK(role IN ('admin','member')) DEFAULT 'member',
     avatar_color TEXT DEFAULT '#6366f1',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
   )`);
+
+  await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS role TEXT CHECK(role IN ('admin','member')) DEFAULT 'member'`);
 
   await pool.query(`CREATE TABLE IF NOT EXISTS projects (
     id SERIAL PRIMARY KEY,

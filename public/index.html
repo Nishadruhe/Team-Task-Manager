@@ -63,6 +63,14 @@
             <i class="fas fa-lock"></i>
             <input type="password" id="signup-password" placeholder="Password (min 4 chars)" required minlength="4">
           </div>
+          <div class="input-group">
+            <i class="fas fa-user-shield"></i>
+            <select id="signup-role" required>
+              <option value="" disabled selected>Select Role</option>
+              <option value="admin">Admin</option>
+              <option value="member">Member</option>
+            </select>
+          </div>
           <button type="submit" class="btn btn-primary btn-full">
             <span>Create Account</span> <i class="fas fa-arrow-right"></i>
           </button>
@@ -115,7 +123,7 @@
       <div id="projects-view" class="view" style="display:none">
         <div class="view-header">
           <h1><i class="fas fa-folder-open"></i> Projects</h1>
-          <button class="btn btn-primary" onclick="openModal('create-project-modal')">
+          <button id="new-project-btn" class="btn btn-primary" onclick="openModal('create-project-modal')" style="display:none">
             <i class="fas fa-plus"></i> New Project
           </button>
         </div>
@@ -156,7 +164,7 @@
                 <option value="low">Low</option>
               </select>
             </div>
-            <button class="btn btn-primary" onclick="openCreateTaskModal()">
+            <button id="add-task-btn" class="btn btn-primary" onclick="openCreateTaskModal()" style="display:none">
               <i class="fas fa-plus"></i> Add Task
             </button>
           </div>
@@ -299,7 +307,7 @@
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
-        <button type="button" class="btn btn-danger btn-full" style="margin-top:10px" onclick="deleteTask()">
+        <button type="button" id="delete-task-btn" class="btn btn-danger btn-full" style="margin-top:10px" onclick="deleteTask()">
           <i class="fas fa-trash"></i> Delete Task
         </button>
       </form>

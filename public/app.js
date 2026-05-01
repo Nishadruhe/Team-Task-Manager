@@ -51,10 +51,13 @@ async function handleLogin(e) {
 async function handleSignup(e) {
   e.preventDefault();
   try {
+    const role = document.getElementById('signup-role').value;
+    if (!role) { document.getElementById('signup-error').textContent = 'Please select a role'; return; }
     const data = await api('/api/auth/signup', 'POST', {
       name: document.getElementById('signup-name').value,
       email: document.getElementById('signup-email').value,
-      password: document.getElementById('signup-password').value
+      password: document.getElementById('signup-password').value,
+      role: role
     });
     token = data.token;
     localStorage.setItem('token', token);
@@ -81,8 +84,10 @@ async function initApp() {
     document.getElementById('app-page').style.display = 'flex';
     document.getElementById('user-info').innerHTML = `
       <div class="avatar" style="background:${currentUser.avatar_color}">${currentUser.name[0].toUpperCase()}</div>
-      <span>${currentUser.name}</span>`;
+      <span>${currentUser.name} <span class="role-badge role-${currentUser.role}">${currentUser.role}</span></span>`;
     document.getElementById('user-name-display').textContent = currentUser.name.split(' ')[0];
+    // Show/hide admin-only buttons
+    document.getElementById('new-project-btn').style.display = currentUser.role === 'admin' ? '' : 'none';
     showView('dashboard');
   } catch {
     logout();
@@ -184,8 +189,9 @@ async function openProject(id) {
     currentProjectMembers = project.members;
     document.getElementById('project-title').textContent = project.name;
 
+    const isAdmin = currentUser.role === 'admin';
     const actions = document.getElementById('project-actions');
-    if (project.my_role === 'admin') {
+    if (isAdmin) {
       actions.innerHTML = `
         <button class="btn btn-sm btn-outline" onclick="openEditProject()">&#9998; Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteProject()">&#128465; Delete</button>`;
@@ -193,9 +199,10 @@ async function openProject(id) {
       actions.innerHTML = `<span class="role-badge role-member">Member</span>`;
     }
 
-    document.getElementById('add-member-section').style.display = project.my_role === 'admin' ? 'block' : 'none';
+    document.getElementById('add-member-section').style.display = isAdmin ? 'block' : 'none';
     showView('project-detail');
     showProjectTab('tasks');
+    document.getElementById('add-task-btn').style.display = currentUser.role === 'admin' ? '' : 'none';
     loadProjectTasks();
     renderMembers();
   } catch (err) { toast(err.message, 'error'); }
@@ -246,7 +253,7 @@ function renderMembers() {
       <div class="avatar" style="background:${m.avatar_color}">${m.name[0].toUpperCase()}</div>
       <div class="member-info"><h4>${esc(m.name)}</h4><p>${esc(m.email)}</p></div>
       <span class="role-badge role-${m.role}">${m.role}</span>
-      ${currentProject.my_role === 'admin' && m.id !== currentUser.id ? `
+      ${currentUser.role === 'admin' && m.id !== currentUser.id ? `
         <select onchange="changeRole(${m.id}, this.value)" style="width:auto;margin:0;padding:4px 8px;font-size:12px">
           <option value="member" ${m.role === 'member' ? 'selected' : ''}>Member</option>
           <option value="admin" ${m.role === 'admin' ? 'selected' : ''}>Admin</option>
@@ -374,7 +381,7 @@ function openEditTaskModal(taskId) {
   sel.innerHTML = '<option value="">Unassigned</option>' + currentProjectMembers.map(m => `<option value="${m.id}" ${m.id === t.assigned_to ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
 
   // If member, disable fields except status
-  const isAdmin = currentProject.my_role === 'admin';
+  const isAdmin = currentUser.role === 'admin';
   document.getElementById('edit-task-title').disabled = !isAdmin;
   document.getElementById('edit-task-desc').disabled = !isAdmin;
   document.getElementById('edit-task-priority').disabled = !isAdmin;
@@ -382,6 +389,9 @@ function openEditTaskModal(taskId) {
   sel.disabled = !isAdmin;
 
   openModal('edit-task-modal');
+
+  // Hide delete button for members
+  document.getElementById('delete-task-btn').style.display = currentUser.role === 'admin' ? '' : 'none';
 }
 
 async function updateTask(e) {
