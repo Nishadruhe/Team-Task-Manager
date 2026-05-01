@@ -2,7 +2,7 @@
   TeamFlow - Team Task Manager
 =====================================
 
-LIVE URL: https://web-production-b7de7.up.railway.app
+LIVE URL: https://web-production-1b994.up.railway.app
 GITHUB REPO: https://github.com/Nishadruhe/Team-Task-Manager
 
 -------------------------------------
