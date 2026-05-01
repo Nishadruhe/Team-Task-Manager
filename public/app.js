@@ -5,7 +5,6 @@ let currentProject = null;
 let currentProjectMembers = [];
 let allTasks = [];
 
-// --- API Helper ---
 async function api(path, method = 'GET', body = null) {
   const opts = { method, headers: { 'Content-Type': 'application/json' } };
   if (token) opts.headers['Authorization'] = 'Bearer ' + token;
@@ -16,13 +15,14 @@ async function api(path, method = 'GET', body = null) {
   return data;
 }
 
-// --- Toast ---
 function toast(msg, type = 'success') {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.className = 'toast show ' + type;
   setTimeout(() => el.className = 'toast', 2500);
 }
+
+function isAdmin() { return currentUser && currentUser.role === 'admin'; }
 
 // --- Auth ---
 function showAuthTab(tab) {
@@ -86,8 +86,7 @@ async function initApp() {
       <div class="avatar" style="background:${currentUser.avatar_color}">${currentUser.name[0].toUpperCase()}</div>
       <span>${currentUser.name} <span class="role-badge role-${currentUser.role}">${currentUser.role}</span></span>`;
     document.getElementById('user-name-display').textContent = currentUser.name.split(' ')[0];
-    // Show/hide admin-only buttons
-    document.getElementById('new-project-btn').style.display = currentUser.role === 'admin' ? '' : 'none';
+    document.getElementById('new-project-btn').style.display = isAdmin() ? '' : 'none';
     showView('dashboard');
   } catch {
     logout();
@@ -123,7 +122,7 @@ async function loadDashboard() {
 
     const container = document.getElementById('dashboard-tasks');
     if (!tasks.length) {
-      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>No tasks assigned to you yet</p></div>';
+      container.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><p>No tasks yet</p></div>';
       return;
     }
     container.innerHTML = tasks.map(t => {
@@ -133,7 +132,7 @@ async function loadDashboard() {
         <div class="task-status-dot" style="background:${dotColor}"></div>
         <div class="dash-task-info">
           <h4>${esc(t.title)}</h4>
-          <span>${esc(t.project_name)} ${t.due_date ? '&middot; Due: ' + t.due_date : ''} ${overdue ? '<span class="badge badge-overdue">OVERDUE</span>' : ''}</span>
+          <span>${esc(t.project_name)} ${t.assigned_name ? '&middot; ' + esc(t.assigned_name) : ''} ${t.due_date ? '&middot; Due: ' + t.due_date : ''} ${overdue ? '<span class="badge badge-overdue">OVERDUE</span>' : ''}</span>
         </div>
         <span class="badge badge-${t.priority}">${t.priority}</span>
       </div>`;
@@ -147,7 +146,7 @@ async function loadProjects() {
     const projects = await api('/api/projects');
     const grid = document.getElementById('projects-grid');
     if (!projects.length) {
-      grid.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128193;</div><p>No projects yet. Create your first one!</p></div>';
+      grid.innerHTML = `<div class="empty-state"><div class="empty-icon">&#128193;</div><p>${isAdmin() ? 'No projects yet. Create your first one!' : 'No projects assigned to you yet.'}</p></div>`;
       return;
     }
     grid.innerHTML = projects.map(p => {
@@ -189,9 +188,8 @@ async function openProject(id) {
     currentProjectMembers = project.members;
     document.getElementById('project-title').textContent = project.name;
 
-    const isAdmin = currentUser.role === 'admin';
     const actions = document.getElementById('project-actions');
-    if (isAdmin) {
+    if (isAdmin()) {
       actions.innerHTML = `
         <button class="btn btn-sm btn-outline" onclick="openEditProject()">&#9998; Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteProject()">&#128465; Delete</button>`;
@@ -199,12 +197,13 @@ async function openProject(id) {
       actions.innerHTML = `<span class="role-badge role-member">Member</span>`;
     }
 
-    document.getElementById('add-member-section').style.display = isAdmin ? 'block' : 'none';
+    document.getElementById('add-member-section').style.display = isAdmin() ? 'block' : 'none';
+    document.getElementById('add-task-btn').style.display = isAdmin() ? '' : 'none';
+    document.getElementById('members-tab-btn').style.display = isAdmin() ? '' : 'none';
     showView('project-detail');
     showProjectTab('tasks');
-    document.getElementById('add-task-btn').style.display = currentUser.role === 'admin' ? '' : 'none';
     loadProjectTasks();
-    renderMembers();
+    if (isAdmin()) renderMembers();
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -252,12 +251,8 @@ function renderMembers() {
     <div class="member-card">
       <div class="avatar" style="background:${m.avatar_color}">${m.name[0].toUpperCase()}</div>
       <div class="member-info"><h4>${esc(m.name)}</h4><p>${esc(m.email)}</p></div>
-      <span class="role-badge role-${m.role}">${m.role}</span>
-      ${currentUser.role === 'admin' && m.id !== currentUser.id ? `
-        <select onchange="changeRole(${m.id}, this.value)" style="width:auto;margin:0;padding:4px 8px;font-size:12px">
-          <option value="member" ${m.role === 'member' ? 'selected' : ''}>Member</option>
-          <option value="admin" ${m.role === 'admin' ? 'selected' : ''}>Admin</option>
-        </select>
+      <span class="role-badge role-${m.user_role || m.role}">${m.user_role || m.role}</span>
+      ${isAdmin() && m.id !== currentUser.id ? `
         <button class="btn btn-sm btn-danger" onclick="removeMember(${m.id})">Remove</button>
       ` : ''}
     </div>`).join('');
@@ -265,10 +260,9 @@ function renderMembers() {
 
 async function addMember() {
   const email = document.getElementById('member-email').value;
-  const role = document.getElementById('member-role').value;
   if (!email) return;
   try {
-    const member = await api('/api/projects/' + currentProject.id + '/members', 'POST', { email, role });
+    const member = await api('/api/projects/' + currentProject.id + '/members', 'POST', { email });
     currentProjectMembers.push(member);
     renderMembers();
     document.getElementById('member-email').value = '';
@@ -283,16 +277,6 @@ async function removeMember(userId) {
     currentProjectMembers = currentProjectMembers.filter(m => m.id !== userId);
     renderMembers();
     toast('Member removed');
-  } catch (err) { toast(err.message, 'error'); }
-}
-
-async function changeRole(userId, role) {
-  try {
-    await api('/api/projects/' + currentProject.id + '/members/' + userId, 'PUT', { role });
-    const m = currentProjectMembers.find(m => m.id === userId);
-    if (m) m.role = role;
-    renderMembers();
-    toast('Role updated');
   } catch (err) { toast(err.message, 'error'); }
 }
 
@@ -380,18 +364,15 @@ function openEditTaskModal(taskId) {
   const sel = document.getElementById('edit-task-assign');
   sel.innerHTML = '<option value="">Unassigned</option>' + currentProjectMembers.map(m => `<option value="${m.id}" ${m.id === t.assigned_to ? 'selected' : ''}>${esc(m.name)}</option>`).join('');
 
-  // If member, disable fields except status
-  const isAdmin = currentUser.role === 'admin';
-  document.getElementById('edit-task-title').disabled = !isAdmin;
-  document.getElementById('edit-task-desc').disabled = !isAdmin;
-  document.getElementById('edit-task-priority').disabled = !isAdmin;
-  document.getElementById('edit-task-due').disabled = !isAdmin;
-  sel.disabled = !isAdmin;
+  const admin = isAdmin();
+  document.getElementById('edit-task-title').disabled = !admin;
+  document.getElementById('edit-task-desc').disabled = !admin;
+  document.getElementById('edit-task-priority').disabled = !admin;
+  document.getElementById('edit-task-due').disabled = !admin;
+  sel.disabled = !admin;
+  document.getElementById('delete-task-btn').style.display = admin ? '' : 'none';
 
   openModal('edit-task-modal');
-
-  // Hide delete button for members
-  document.getElementById('delete-task-btn').style.display = currentUser.role === 'admin' ? '' : 'none';
 }
 
 async function updateTask(e) {
@@ -423,16 +404,13 @@ async function deleteTask() {
   } catch (err) { toast(err.message, 'error'); }
 }
 
-// --- Modal ---
 function openModal(id) { document.getElementById(id).classList.add('show'); }
 function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
-// --- Util ---
 function esc(str) {
   const d = document.createElement('div');
   d.textContent = str;
   return d.innerHTML;
 }
 
-// --- Boot ---
 if (token) initApp();

@@ -143,7 +143,7 @@
           <button class="proj-tab active" onclick="showProjectTab('tasks')">
             <i class="fas fa-tasks"></i> Tasks
           </button>
-          <button class="proj-tab" onclick="showProjectTab('members')">
+          <button class="proj-tab" id="members-tab-btn" onclick="showProjectTab('members')">
             <i class="fas fa-users"></i> Members
           </button>
         </div>
@@ -194,7 +194,6 @@
           <div id="add-member-section" style="display:none">
             <div class="add-member-form">
               <input type="email" id="member-email" placeholder="Enter user email">
-              <select id="member-role"><option value="member">Member</option><option value="admin">Admin</option></select>
               <button class="btn btn-primary" onclick="addMember()"><i class="fas fa-plus"></i> Add</button>
             </div>
           </div>
