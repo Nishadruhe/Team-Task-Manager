@@ -4,15 +4,32 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TeamFlow - Task Manager</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- Auth Page -->
+
+  <!-- ========== AUTH PAGE ========== -->
   <div id="auth-page" class="page">
+    <div class="auth-bg">
+      <div class="grid-overlay"></div>
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
     <div class="auth-container">
       <div class="auth-brand">
-        <div class="logo">&#9889; TeamFlow</div>
-        <p>Manage projects, assign tasks, track progress.</p>
+        <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+        <div class="logo">TeamFlow</div>
+        <p>Streamline your projects. Empower your team.</p>
+        <div class="auth-features">
+          <div class="auth-feature"><i class="fas fa-check-circle"></i> Project Management</div>
+          <div class="auth-feature"><i class="fas fa-check-circle"></i> Task Tracking</div>
+          <div class="auth-feature"><i class="fas fa-check-circle"></i> Team Collaboration</div>
+        </div>
       </div>
       <div class="auth-card">
         <div class="auth-tabs">
@@ -20,36 +37,65 @@
           <button class="auth-tab" onclick="showAuthTab('signup')">Sign Up</button>
         </div>
         <form id="login-form" onsubmit="handleLogin(event)">
-          <input type="email" id="login-email" placeholder="Email" required>
-          <input type="password" id="login-password" placeholder="Password" required>
-          <button type="submit" class="btn btn-primary btn-full">Login</button>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="login-email" placeholder="Email address" required>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="login-password" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <span>Sign In</span> <i class="fas fa-arrow-right"></i>
+          </button>
           <div id="login-error" class="error-msg"></div>
         </form>
         <form id="signup-form" style="display:none" onsubmit="handleSignup(event)">
-          <input type="text" id="signup-name" placeholder="Full Name" required>
-          <input type="email" id="signup-email" placeholder="Email" required>
-          <input type="password" id="signup-password" placeholder="Password (min 4 chars)" required minlength="4">
-          <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+          <div class="input-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="signup-name" placeholder="Full Name" required>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-envelope"></i>
+            <input type="email" id="signup-email" placeholder="Email address" required>
+          </div>
+          <div class="input-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="signup-password" placeholder="Password (min 4 chars)" required minlength="4">
+          </div>
+          <button type="submit" class="btn btn-primary btn-full">
+            <span>Create Account</span> <i class="fas fa-arrow-right"></i>
+          </button>
           <div id="signup-error" class="error-msg"></div>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- Main App -->
+  <!-- ========== MAIN APP ========== -->
   <div id="app-page" class="page" style="display:none">
     <!-- Sidebar -->
     <nav id="sidebar">
       <div class="sidebar-header">
-        <div class="logo-sm">&#9889; TeamFlow</div>
+        <div class="logo-sm"><i class="fas fa-bolt"></i> TeamFlow</div>
       </div>
       <ul class="nav-links">
-        <li><a href="#" class="nav-link active" onclick="showView('dashboard')">&#128202; Dashboard</a></li>
-        <li><a href="#" class="nav-link" onclick="showView('projects')">&#128193; Projects</a></li>
+        <li>
+          <a href="#" class="nav-link active" onclick="showView('dashboard')">
+            <i class="fas fa-th-large"></i> <span>Dashboard</span>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-link" onclick="showView('projects')">
+            <i class="fas fa-folder-open"></i> <span>Projects</span>
+          </a>
+        </li>
       </ul>
       <div class="sidebar-footer">
         <div id="user-info" class="user-info"></div>
-        <button class="btn btn-sm btn-outline" onclick="logout()">Logout</button>
+        <button class="btn btn-sm btn-outline btn-full" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
       </div>
     </nav>
 
@@ -58,18 +104,20 @@
       <!-- Dashboard View -->
       <div id="dashboard-view" class="view">
         <div class="view-header">
-          <h1>&#128075; Welcome back, <span id="user-name-display"></span></h1>
+          <h1><span class="wave">&#128075;</span> Welcome back, <span id="user-name-display"></span></h1>
         </div>
         <div id="stats-grid" class="stats-grid"></div>
-        <h2 class="section-title">My Tasks</h2>
+        <h2 class="section-title"><i class="fas fa-tasks"></i> My Tasks</h2>
         <div id="dashboard-tasks" class="task-list"></div>
       </div>
 
       <!-- Projects View -->
       <div id="projects-view" class="view" style="display:none">
         <div class="view-header">
-          <h1>&#128193; Projects</h1>
-          <button class="btn btn-primary" onclick="openModal('create-project-modal')">+ New Project</button>
+          <h1><i class="fas fa-folder-open"></i> Projects</h1>
+          <button class="btn btn-primary" onclick="openModal('create-project-modal')">
+            <i class="fas fa-plus"></i> New Project
+          </button>
         </div>
         <div id="projects-grid" class="projects-grid"></div>
       </div>
@@ -77,13 +125,19 @@
       <!-- Project Detail View -->
       <div id="project-detail-view" class="view" style="display:none">
         <div class="view-header">
-          <button class="btn btn-sm btn-outline" onclick="showView('projects')">&larr; Back</button>
+          <button class="btn btn-sm btn-outline" onclick="showView('projects')">
+            <i class="fas fa-arrow-left"></i> Back
+          </button>
           <h1 id="project-title"></h1>
           <div id="project-actions"></div>
         </div>
         <div class="project-tabs">
-          <button class="proj-tab active" onclick="showProjectTab('tasks')">Tasks</button>
-          <button class="proj-tab" onclick="showProjectTab('members')">Members</button>
+          <button class="proj-tab active" onclick="showProjectTab('tasks')">
+            <i class="fas fa-tasks"></i> Tasks
+          </button>
+          <button class="proj-tab" onclick="showProjectTab('members')">
+            <i class="fas fa-users"></i> Members
+          </button>
         </div>
         <!-- Tasks Tab -->
         <div id="tasks-tab" class="proj-tab-content">
@@ -102,19 +156,27 @@
                 <option value="low">Low</option>
               </select>
             </div>
-            <button class="btn btn-primary" onclick="openCreateTaskModal()">+ Add Task</button>
+            <button class="btn btn-primary" onclick="openCreateTaskModal()">
+              <i class="fas fa-plus"></i> Add Task
+            </button>
           </div>
           <div class="kanban-board">
             <div class="kanban-col">
-              <div class="kanban-header todo-header">&#128203; To Do <span id="todo-count" class="count-badge">0</span></div>
+              <div class="kanban-header todo-header">
+                <span class="kanban-dot dot-todo"></span> To Do <span id="todo-count" class="count-badge">0</span>
+              </div>
               <div id="todo-tasks" class="kanban-tasks"></div>
             </div>
             <div class="kanban-col">
-              <div class="kanban-header progress-header">&#9881;&#65039; In Progress <span id="progress-count" class="count-badge">0</span></div>
+              <div class="kanban-header progress-header">
+                <span class="kanban-dot dot-progress"></span> In Progress <span id="progress-count" class="count-badge">0</span>
+              </div>
               <div id="progress-tasks" class="kanban-tasks"></div>
             </div>
             <div class="kanban-col">
-              <div class="kanban-header done-header">&#9989; Done <span id="done-count" class="count-badge">0</span></div>
+              <div class="kanban-header done-header">
+                <span class="kanban-dot dot-done"></span> Done <span id="done-count" class="count-badge">0</span>
+              </div>
               <div id="done-tasks" class="kanban-tasks"></div>
             </div>
           </div>
@@ -125,7 +187,7 @@
             <div class="add-member-form">
               <input type="email" id="member-email" placeholder="Enter user email">
               <select id="member-role"><option value="member">Member</option><option value="admin">Admin</option></select>
-              <button class="btn btn-primary" onclick="addMember()">Add</button>
+              <button class="btn btn-primary" onclick="addMember()"><i class="fas fa-plus"></i> Add</button>
             </div>
           </div>
           <div id="members-list" class="members-list"></div>
@@ -137,9 +199,15 @@
   <!-- Create Project Modal -->
   <div id="create-project-modal" class="modal">
     <div class="modal-content">
-      <div class="modal-header"><h2>New Project</h2><button class="close-btn" onclick="closeModal('create-project-modal')">&times;</button></div>
+      <div class="modal-header">
+        <h2><i class="fas fa-folder-plus"></i> New Project</h2>
+        <button class="close-btn" onclick="closeModal('create-project-modal')"><i class="fas fa-times"></i></button>
+      </div>
       <form onsubmit="createProject(event)">
-        <input type="text" id="project-name" placeholder="Project Name" required>
+        <div class="input-group">
+          <i class="fas fa-folder"></i>
+          <input type="text" id="project-name" placeholder="Project Name" required>
+        </div>
         <textarea id="project-desc" placeholder="Description (optional)" rows="3"></textarea>
         <button type="submit" class="btn btn-primary btn-full">Create Project</button>
       </form>
@@ -149,9 +217,15 @@
   <!-- Edit Project Modal -->
   <div id="edit-project-modal" class="modal">
     <div class="modal-content">
-      <div class="modal-header"><h2>Edit Project</h2><button class="close-btn" onclick="closeModal('edit-project-modal')">&times;</button></div>
+      <div class="modal-header">
+        <h2><i class="fas fa-edit"></i> Edit Project</h2>
+        <button class="close-btn" onclick="closeModal('edit-project-modal')"><i class="fas fa-times"></i></button>
+      </div>
       <form onsubmit="updateProject(event)">
-        <input type="text" id="edit-project-name" placeholder="Project Name" required>
+        <div class="input-group">
+          <i class="fas fa-folder"></i>
+          <input type="text" id="edit-project-name" placeholder="Project Name" required>
+        </div>
         <textarea id="edit-project-desc" placeholder="Description" rows="3"></textarea>
         <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
       </form>
@@ -161,9 +235,15 @@
   <!-- Create Task Modal -->
   <div id="create-task-modal" class="modal">
     <div class="modal-content">
-      <div class="modal-header"><h2>New Task</h2><button class="close-btn" onclick="closeModal('create-task-modal')">&times;</button></div>
+      <div class="modal-header">
+        <h2><i class="fas fa-plus-circle"></i> New Task</h2>
+        <button class="close-btn" onclick="closeModal('create-task-modal')"><i class="fas fa-times"></i></button>
+      </div>
       <form onsubmit="createTask(event)">
-        <input type="text" id="task-title" placeholder="Task Title" required>
+        <div class="input-group">
+          <i class="fas fa-heading"></i>
+          <input type="text" id="task-title" placeholder="Task Title" required>
+        </div>
         <textarea id="task-desc" placeholder="Description (optional)" rows="2"></textarea>
         <div class="form-row">
           <div class="form-group">
@@ -187,10 +267,16 @@
   <!-- Edit Task Modal -->
   <div id="edit-task-modal" class="modal">
     <div class="modal-content">
-      <div class="modal-header"><h2>Edit Task</h2><button class="close-btn" onclick="closeModal('edit-task-modal')">&times;</button></div>
+      <div class="modal-header">
+        <h2><i class="fas fa-edit"></i> Edit Task</h2>
+        <button class="close-btn" onclick="closeModal('edit-task-modal')"><i class="fas fa-times"></i></button>
+      </div>
       <form onsubmit="updateTask(event)">
         <input type="hidden" id="edit-task-id">
-        <input type="text" id="edit-task-title" placeholder="Task Title" required>
+        <div class="input-group">
+          <i class="fas fa-heading"></i>
+          <input type="text" id="edit-task-title" placeholder="Task Title" required>
+        </div>
         <textarea id="edit-task-desc" placeholder="Description" rows="2"></textarea>
         <div class="form-row">
           <div class="form-group">
@@ -213,6 +299,9 @@
           </div>
         </div>
         <button type="submit" class="btn btn-primary btn-full">Save Changes</button>
+        <button type="button" class="btn btn-danger btn-full" style="margin-top:10px" onclick="deleteTask()">
+          <i class="fas fa-trash"></i> Delete Task
+        </button>
       </form>
     </div>
   </div>

@@ -29,7 +29,7 @@ function showAuthTab(tab) {
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
   document.getElementById('signup-form').style.display = tab === 'signup' ? 'block' : 'none';
-  event.target.classList.add('active');
+  if (event && event.target) event.target.classList.add('active');
 }
 
 async function handleLogin(e) {
@@ -234,7 +234,8 @@ function showProjectTab(tab) {
   document.querySelectorAll('.proj-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.proj-tab-content').forEach(c => c.style.display = 'none');
   document.getElementById(tab + '-tab').style.display = 'block';
-  event.target.classList.add('active');
+  const tabs = document.querySelectorAll('.proj-tab');
+  tabs.forEach(t => { if (t.textContent.trim().toLowerCase().startsWith(tab)) t.classList.add('active'); });
 }
 
 // --- Members ---
@@ -397,6 +398,17 @@ async function updateTask(e) {
     });
     closeModal('edit-task-modal');
     toast('Task updated!');
+    loadProjectTasks();
+  } catch (err) { toast(err.message, 'error'); }
+}
+
+async function deleteTask() {
+  const id = document.getElementById('edit-task-id').value;
+  if (!confirm('Delete this task?')) return;
+  try {
+    await api('/api/tasks/' + id, 'DELETE');
+    closeModal('edit-task-modal');
+    toast('Task deleted');
     loadProjectTasks();
   } catch (err) { toast(err.message, 'error'); }
 }
