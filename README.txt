@@ -16,7 +16,7 @@ progress with a clean Kanban board interface and role-based access control.
 TECH STACK
 -------------------------------------
 - Backend:  Node.js + Express.js
-- Database: SQLite (via better-sqlite3)
+- Database: PostgreSQL (hosted on Railway)
 - Auth:     JWT (JSON Web Tokens) + bcrypt
 - Frontend: Vanilla HTML, CSS, JavaScript (no frameworks)
 - Deploy:   Railway
