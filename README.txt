@@ -2,8 +2,8 @@
   TeamFlow - Team Task Manager
 =====================================
 
-LIVE URL: <paste-your-railway-url-here>
-GITHUB REPO: <paste-your-github-repo-url-here>
+LIVE URL: https://web-production-eaf8.up.railway.app
+GITHUB REPO: https://github.com/Nishadruhe/Team-Task-Manager
 
 -------------------------------------
 ABOUT
@@ -86,7 +86,7 @@ Tasks:
 HOW TO RUN LOCALLY
 -------------------------------------
 1. Clone the repository
-   git clone <repo-url>
+   git clone https://github.com/Nishadruhe/Team-Task-Manager.git
    cd team-task-manager
 
 2. Install dependencies
